@@ -20,6 +20,7 @@ public class BasicSpider {
     private float bodyLength, legLength;
     private Paint paint;
     private Bitmap bitmap;
+    private Canvas m_canvas;
 
     //基本款蜘蛛的腳沒有關節，用八條線畫
     //順時針，右上起算「第一隻腳」「第二隻腳」
@@ -66,6 +67,7 @@ public class BasicSpider {
         paint.setColor(Color.parseColor(color));
         paint.setStrokeWidth(5);
 
+        drawBasic(body, leg);
 
     }
 
@@ -97,12 +99,61 @@ public class BasicSpider {
         legs[6].setEnd(center - insideLegX, center - insideLegY);
         legs[7].setEnd(center - outsideLegX, center - outsideLegY);
 
-        Canvas canvas = new Canvas(bitmap);
+        m_canvas = new Canvas(bitmap);
 
         for (Line line : legs){
-            line.draw(canvas, paint);
+            line.draw(m_canvas, paint);
         }
-        canvas.save();
+        m_canvas.save();
+    }
+
+    private int checkDirection(float startX, float startY, float targetX, float targetY){
+        float d_x = targetX - startX;
+        float d_y = targetY - startY;
+
+        if(d_x == 0 && d_y == 0){
+            return 0;
+        }
+
+        if(d_x == 0){
+            if(d_y > 0){
+                return 180;
+            }else if(d_y < 0){
+                return 0;
+            }
+        }
+
+        if(d_y == 0){
+            if(d_x > 0){
+                return 90;
+            }else if(d_x < 0){
+                return 270;
+            }
+        }
+
+        //以下是x, y 不等於 0的情況
+        int ans;
+
+        float temp_x = Math.abs(d_x);
+        float temp_y = Math.abs(d_y);
+
+        int tan2 = (int)Math.atan2(temp_y, temp_x);
+
+        if(d_x > 0){//右邊
+            if(d_y > 0){//右下
+                ans = 90 + tan2;
+            }else {//右上
+                ans = 90 - tan2;
+            }
+        }else {//左邊
+            if(d_y > 0){//左下
+                ans = 270 - tan2;
+            }else {//左上
+                ans = 270 + tan2;
+            }
+        }
+
+        return ans;
     }
 
     public void draw(Canvas canvas,float targetX, float targetY){

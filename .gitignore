@@ -43,4 +43,4 @@ captures/
 
 .idea/
 .app/build
-output.sh
+publish.sh
