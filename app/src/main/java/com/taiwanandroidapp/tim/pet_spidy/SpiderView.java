@@ -5,11 +5,15 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.taiwanandroidapp.tim.pet_spidy.Manager.Manager;
+
 /**
  * Created by tim on 2017/2/15.
  */
 
 public class SpiderView extends View {
+
+    private Manager manager;
 
 
     public SpiderView(Context context) {
@@ -28,12 +32,13 @@ public class SpiderView extends View {
     }
 
     private void init(){
-
+        manager = new Manager();
     }
 
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        manager.draw(canvas);
     }
 }
