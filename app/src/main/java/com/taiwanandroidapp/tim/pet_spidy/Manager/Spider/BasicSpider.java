@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import com.taiwanandroidapp.tim.pet_spidy.Manager.Tool.Line;
 
@@ -116,7 +117,10 @@ public class BasicSpider {
 
         if(needToMove(targetX, targetY)){
             angleFaceTo = countAngle(positionX, positionY, targetX, targetY);
+            LOG("angleFaceTo = "+angleFaceTo);
             move();
+        }else {
+            LOG("Not move");
         }
 
         drawBody(canvas);
@@ -206,7 +210,7 @@ public class BasicSpider {
                 rememberTargetY = targetY;
                 return ans;
             }else {//目標不變
-                return rememberTargetX == positionX && rememberTargetY == positionY;
+                return rememberTargetX != positionX || rememberTargetY != positionY;
             }
 
 
@@ -225,6 +229,7 @@ public class BasicSpider {
                 }else {
                     positionY -= SPEED;
                 }
+                LOG("move() 0");
                 break;
 
             case 90:
@@ -233,6 +238,7 @@ public class BasicSpider {
                 }else {
                     positionX += SPEED;
                 }
+                LOG("move() 90");
                 break;
 
             case 180:
@@ -241,6 +247,7 @@ public class BasicSpider {
                 }else {
                     positionY += SPEED;
                 }
+                LOG("move() 180");
                 break;
 
             case 270:
@@ -249,6 +256,7 @@ public class BasicSpider {
                 }else {
                     positionX -= SPEED;
                 }
+                LOG("move() 270");
                 break;
             default:
                 move_calculate();
@@ -258,7 +266,7 @@ public class BasicSpider {
     private void move_calculate(){
 
         float corner_angle, xSpeed, ySpeed;
-
+        LOG("in move_calculate()");
         if(angleFaceTo < 0 && angleFaceTo < 90){//第一象限
             corner_angle = 90 - angleFaceTo;
             xSpeed = count_X_Speed(corner_angle);
@@ -268,7 +276,7 @@ public class BasicSpider {
             if(positionX >= rememberTargetX){
                 arriveCalculate();
             }
-
+            LOG("in move_calculate() X,Y = "+positionX + ","+positionY);
         }else if(angleFaceTo > 90 && angleFaceTo < 180){//第四象限
             corner_angle = angleFaceTo - 90;
             xSpeed = count_X_Speed(corner_angle);
@@ -278,7 +286,7 @@ public class BasicSpider {
             if(positionX >= rememberTargetX){
                 arriveCalculate();
             }
-
+            LOG("in move_calculate() X,Y = "+positionX + ","+positionY);
         }else if(angleFaceTo > 180 && angleFaceTo < 270){//第三象限
             corner_angle = 270 - angleFaceTo;
             xSpeed = count_X_Speed(corner_angle);
@@ -288,6 +296,7 @@ public class BasicSpider {
             if(positionX <= rememberTargetX){
                 arriveCalculate();
             }
+            LOG("in move_calculate() X,Y = "+positionX + ","+positionY);
         }else {//第二象限
             corner_angle = angleFaceTo - 270;
             xSpeed = count_X_Speed(corner_angle);
@@ -297,6 +306,7 @@ public class BasicSpider {
             if(positionX <= rememberTargetX){
                 arriveCalculate();
             }
+            LOG("in move_calculate() X,Y = "+positionX + ","+positionY);
         }
     }
 
@@ -313,6 +323,11 @@ public class BasicSpider {
     private void arriveCalculate(){
         positionX = rememberTargetX;
         positionY = rememberTargetY;
+    }
+
+    private final String TAG = "BasicSpider";
+    private void LOG(String s){
+        Log.d(TAG, s);
     }
 
 }

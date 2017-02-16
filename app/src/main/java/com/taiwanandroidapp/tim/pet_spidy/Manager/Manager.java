@@ -31,6 +31,8 @@ public class Manager {
             spider.draw(canvas, motionEvent.getX(), motionEvent.getY());
         }
 
+        canvas.save();
+
     }
 
     public void setMotionEvent(MotionEvent motionEvent) {
