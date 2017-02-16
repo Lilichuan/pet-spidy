@@ -54,7 +54,7 @@ public class BasicSpider {
     *
     * 移動的速率：像素/影格
     * */
-    private float SPEED = 20;
+    private float SPEED = 50;
 
 
     public BasicSpider(float body, float leg, String color){
@@ -116,7 +116,7 @@ public class BasicSpider {
         }
 
         if(needToMove(targetX, targetY)){
-            angleFaceTo = countAngle(positionX, positionY, targetX, targetY);
+            angleFaceTo = countAngle(positionX, positionY, rememberTargetX, rememberTargetY);
             LOG("angleFaceTo = "+angleFaceTo);
             move();
         }else {
@@ -130,7 +130,7 @@ public class BasicSpider {
     *
     * 計算面向角度
     * */
-    private int countAngle(float startX, float startY, float targetX, float targetY){
+    private float countAngle(float startX, float startY, float targetX, float targetY){
         float d_x = targetX - startX;
         float d_y = targetY - startY;
 
@@ -155,24 +155,25 @@ public class BasicSpider {
         }
 
         //以下是x, y 不等於 0的情況
-        int ans;
+        float ans;
 
         float temp_x = Math.abs(d_x);
         float temp_y = Math.abs(d_y);
 
-        int tan2 = (int)Math.atan2(temp_y, temp_x);
-
+        double tan2 = (int)Math.atan2(temp_y, temp_x);
+        float angle = (float) (90 * tan2);
+        LOG("tan2="+tan2);
         if(d_x > 0){//右邊
             if(d_y > 0){//右下
-                ans = 90 + tan2;
+                ans = 90 + angle;
             }else {//右上
-                ans = 90 - tan2;
+                ans = 90 - angle;
             }
         }else {//左邊
             if(d_y > 0){//左下
-                ans = 270 - tan2;
+                ans = 270 - angle;
             }else {//左上
-                ans = 270 + tan2;
+                ans = 270 + angle;
             }
         }
 
@@ -189,6 +190,7 @@ public class BasicSpider {
             Canvas temp_canvas = new Canvas(temp_bitmap);
             temp_canvas.rotate(angleFaceTo);
             temp_canvas.save();
+            LOG("rotate " + angleFaceTo + " degree");
         }else {
             temp_bitmap = bitmap;
         }
@@ -220,47 +222,42 @@ public class BasicSpider {
     }
 
     private void move(){
-        int angle = (int)angleFaceTo;
 
-        switch (angle){
-            case 0:
-                if(positionY - SPEED < rememberTargetY){
-                    arriveCalculate();
-                }else {
-                    positionY -= SPEED;
-                }
-                LOG("move() 0");
-                break;
+        if(angleFaceTo == 0){
+            if(positionY - SPEED < rememberTargetY){
+                arriveCalculate();
+            }else {
+                positionY -= SPEED;
+            }
+            LOG("move() 0");
 
-            case 90:
-                if(positionX + SPEED > rememberTargetX){
-                    arriveCalculate();
-                }else {
-                    positionX += SPEED;
-                }
-                LOG("move() 90");
-                break;
+        }else if(angleFaceTo == 90){
+            if(positionX + SPEED > rememberTargetX){
+                arriveCalculate();
+            }else {
+                positionX += SPEED;
+            }
+            LOG("move() 90");
 
-            case 180:
-                if(positionY + SPEED > rememberTargetY){
-                    arriveCalculate();
-                }else {
-                    positionY += SPEED;
-                }
-                LOG("move() 180");
-                break;
+        }else if(angleFaceTo == 180){
+            if(positionY + SPEED > rememberTargetY){
+                arriveCalculate();
+            }else {
+                positionY += SPEED;
+            }
+            LOG("move() 180");
 
-            case 270:
-                if(positionX - SPEED < rememberTargetX){
-                    arriveCalculate();
-                }else {
-                    positionX -= SPEED;
-                }
-                LOG("move() 270");
-                break;
-            default:
-                move_calculate();
+        }else if(angleFaceTo == 270){
+            if(positionX - SPEED < rememberTargetX){
+                arriveCalculate();
+            }else {
+                positionX -= SPEED;
+            }
+            LOG("move() 270");
+        }else {
+            move_calculate();
         }
+
     }
 
     private void move_calculate(){
