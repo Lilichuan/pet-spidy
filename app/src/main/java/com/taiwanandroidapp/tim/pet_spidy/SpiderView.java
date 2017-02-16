@@ -3,6 +3,7 @@ package com.taiwanandroidapp.tim.pet_spidy;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.taiwanandroidapp.tim.pet_spidy.Manager.Manager;
@@ -33,6 +34,14 @@ public class SpiderView extends View {
 
     private void init(){
         manager = new Manager();
+
+        setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                manager.setMotionEvent(motionEvent);
+                return false;
+            }
+        });
     }
 
 
@@ -41,4 +50,6 @@ public class SpiderView extends View {
         super.onDraw(canvas);
         manager.draw(canvas);
     }
+
+
 }

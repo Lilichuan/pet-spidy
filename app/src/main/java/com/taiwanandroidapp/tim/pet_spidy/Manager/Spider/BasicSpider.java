@@ -17,20 +17,17 @@ import com.taiwanandroidapp.tim.pet_spidy.Manager.Tool.Line;
 
 public class BasicSpider {
 
-    private float bodyLength, legLength;
     private Paint paint;
     private Bitmap bitmap;
     private Canvas m_canvas;
 
-    //基本款蜘蛛的腳沒有關節，用八條線畫
-    //順時針，右上起算「第一隻腳」「第二隻腳」
-    private Line[] legs;
+
 
     /*
     * 頭現在面向哪個角度。
     * 值的範圍：0~359
     * */
-    private int angleFaceTo = 0;
+    private float angleFaceTo = 0;
 
     /*
     *
@@ -45,13 +42,12 @@ public class BasicSpider {
     *
     * */
     private float rememberTargetX, rememberTargetY;
-    private int rememberTargetAngle;
 
     /*
     *
     * 轉身的速率：角度/影格
     * */
-    private int ROTATE_SPEED = 50;
+    //private int ROTATE_SPEED = 50;
 
     /*
     *
@@ -61,23 +57,27 @@ public class BasicSpider {
 
 
     public BasicSpider(float body, float leg, String color){
-        bodyLength = body;
-        legLength = leg;
         paint = new Paint();
         paint.setColor(Color.parseColor(color));
         paint.setStrokeWidth(5);
-
+        positionX = -1;
+        positionY = -1;
         drawBasic(body, leg);
-
     }
 
+    /*
+    *
+    * 繪製基本蜘蛛原圖
+    * 基本款蜘蛛的腳沒有關節，用八條線畫
+    * 順時針，右上起算「第一隻腳」「第二隻腳」
+    * */
     private void drawBasic(float body, float leg){
 
         int bitmapW = (int)(body + leg * 2 + 30);
         float center = bitmapW / 2;
         bitmap = Bitmap.createBitmap(bitmapW, bitmapW, Bitmap.Config.ARGB_4444);
 
-        legs = new Line[8];
+        Line[] legs = new Line[8];
         for (int i = 0 ;i < legs.length; i++){
             legs[i] = new Line();
             legs[i].setStart(center, center);
@@ -107,7 +107,26 @@ public class BasicSpider {
         m_canvas.save();
     }
 
-    private int checkDirection(float startX, float startY, float targetX, float targetY){
+    public void draw(Canvas canvas,float targetX, float targetY){
+
+        if(positionX < 0 || positionY < 0){
+            positionX = canvas.getWidth() / 2;
+            positionY = canvas.getHeight() / 2;
+        }
+
+        if(needToMove(targetX, targetY)){
+            angleFaceTo = countAngle(positionX, positionY, targetX, targetY);
+            move();
+        }
+
+        drawBody(canvas);
+    }
+
+    /*
+    *
+    * 計算面向角度
+    * */
+    private int countAngle(float startX, float startY, float targetX, float targetY){
         float d_x = targetX - startX;
         float d_y = targetY - startY;
 
@@ -156,26 +175,144 @@ public class BasicSpider {
         return ans;
     }
 
-    public void draw(Canvas canvas,float targetX, float targetY){
 
-    }
 
     private void drawBody(Canvas canvas){
-        canvas.drawCircle(positionX, positionX, bodyLength / 2, paint);
-    }
+        Bitmap temp_bitmap;
 
-    private boolean isGoingNewPlace(float targetX, float targetY){
-        boolean ans = rememberTargetX != targetX || rememberTargetY != targetY ;
-        if(ans){
-            rememberTargetX = targetX;
-            rememberTargetY = targetY;
+        if(angleFaceTo > 0){
+            temp_bitmap = Bitmap.createBitmap(bitmap);
+            Canvas temp_canvas = new Canvas(temp_bitmap);
+            temp_canvas.rotate(angleFaceTo);
+            temp_canvas.save();
+        }else {
+            temp_bitmap = bitmap;
         }
 
-        return ans;
+        int half_w = temp_bitmap.getWidth() / 2;
+
+        canvas.drawBitmap(temp_bitmap,
+                positionX - half_w,
+                positionY - half_w,
+                paint);
     }
 
-    private void calculateTargetAngle(float targetX, float targetY){
+    private boolean needToMove(float targetX, float targetY){
 
+        if(targetX > 0 && targetY > 0){//有效的目的地座標
+            boolean ans = rememberTargetX != targetX || rememberTargetY != targetY ;
+            if(ans){//前往新地點
+                rememberTargetX = targetX;
+                rememberTargetY = targetY;
+                return ans;
+            }else {//目標不變
+                return rememberTargetX == positionX && rememberTargetY == positionY;
+            }
+
+
+        }else {//停在原地
+            return false;
+        }
+    }
+
+    private void move(){
+        int angle = (int)angleFaceTo;
+
+        switch (angle){
+            case 0:
+                if(positionY - SPEED < rememberTargetY){
+                    arriveCalculate();
+                }else {
+                    positionY -= SPEED;
+                }
+                break;
+
+            case 90:
+                if(positionX + SPEED > rememberTargetX){
+                    arriveCalculate();
+                }else {
+                    positionX += SPEED;
+                }
+                break;
+
+            case 180:
+                if(positionY + SPEED > rememberTargetY){
+                    arriveCalculate();
+                }else {
+                    positionY += SPEED;
+                }
+                break;
+
+            case 270:
+                if(positionX - SPEED < rememberTargetX){
+                    arriveCalculate();
+                }else {
+                    positionX -= SPEED;
+                }
+                break;
+            default:
+                move_calculate();
+        }
+    }
+
+    private void move_calculate(){
+
+        float corner_angle, xSpeed, ySpeed;
+
+        if(angleFaceTo < 0 && angleFaceTo < 90){//第一象限
+            corner_angle = 90 - angleFaceTo;
+            xSpeed = count_X_Speed(corner_angle);
+            ySpeed = count_Y_Speed(corner_angle);
+            positionX += xSpeed;
+            positionY -= ySpeed;
+            if(positionX >= rememberTargetX){
+                arriveCalculate();
+            }
+
+        }else if(angleFaceTo > 90 && angleFaceTo < 180){//第四象限
+            corner_angle = angleFaceTo - 90;
+            xSpeed = count_X_Speed(corner_angle);
+            ySpeed = count_Y_Speed(corner_angle);
+            positionX += xSpeed;
+            positionY += ySpeed;
+            if(positionX >= rememberTargetX){
+                arriveCalculate();
+            }
+
+        }else if(angleFaceTo > 180 && angleFaceTo < 270){//第三象限
+            corner_angle = 270 - angleFaceTo;
+            xSpeed = count_X_Speed(corner_angle);
+            ySpeed = count_Y_Speed(corner_angle);
+            positionX -= xSpeed;
+            positionY += ySpeed;
+            if(positionX <= rememberTargetX){
+                arriveCalculate();
+            }
+        }else {//第二象限
+            corner_angle = angleFaceTo - 270;
+            xSpeed = count_X_Speed(corner_angle);
+            ySpeed = count_Y_Speed(corner_angle);
+            positionX -= xSpeed;
+            positionY -= ySpeed;
+            if(positionX <= rememberTargetX){
+                arriveCalculate();
+            }
+        }
+    }
+
+    //斜線前進，求X每格速率
+    private float count_X_Speed(float angle){
+        return (float) (Math.cos(angle) * SPEED);
+    }
+
+    //斜線前進，求Y每格速率
+    private float count_Y_Speed(float angle){
+        return (float) (Math.sin(angle) * SPEED);
+    }
+
+    private void arriveCalculate(){
+        positionX = rememberTargetX;
+        positionY = rememberTargetY;
     }
 
 }
