@@ -54,7 +54,7 @@ public class BasicSpider {
     *
     * 移動的速率：像素/影格
     * */
-    private float SPEED = 50;
+    private float SPEED = 40;
 
 
     public BasicSpider(float body, float leg, String color){

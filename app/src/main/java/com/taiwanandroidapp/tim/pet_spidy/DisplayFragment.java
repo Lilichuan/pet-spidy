@@ -57,7 +57,7 @@ public class DisplayFragment extends Fragment {
             public void run() {
                 handler.obtainMessage().sendToTarget();
             }
-        },200,1000);
+        },200,200);
     }
 
     private static Handler handler = new Handler(){
